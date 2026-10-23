@@ -324,6 +324,13 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             // Cards come right after the configured dock apps, before the alphabetical grid.
             boolean ca = a.kind == Entry.CARD, cb = b.kind == Entry.CARD;
             if (ca != cb) return ca ? -1 : 1;
+
+            // Sort remaining apps by last usage (most recently used first):
+            long la = LastOpened.get(ctx, a.pkg);
+            long lb = LastOpened.get(ctx, b.pkg);
+            if (la != lb) {
+                return Long.compare(lb, la);
+            }
             return a.label.compareToIgnoreCase(b.label);
         });
         // Retain the optional Default-home tile until dependent tile-ordering work is merged.
@@ -551,7 +558,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
         try {
             ctx.startActivity(i);
-            if (cinematic) LastOpened.record(ctx, e.pkg);
+            LastOpened.record(ctx, e.pkg);
             if (advancedEffects && !reducedMotion && ctx instanceof Activity) {
                 ((Activity) ctx).overridePendingTransition(R.anim.app_open_enter, R.anim.app_open_exit);
             }
